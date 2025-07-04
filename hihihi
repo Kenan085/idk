@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Puzzle of My Heart</title>
+  <style>
+    body {
+      margin: 0;
+      background: #fce4ec;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+    h1 {
+      margin-bottom: 20px;
+      color: #880e4f;
+    }
+    #puzzle {
+      width: 300px;
+      height: 300px;
+      display: flex;
+      flex-wrap: wrap;
+      border: 4px solid #880e4f;
+    }
+    .tile {
+      width: 100px;
+      height: 100px;
+      background-image: url('https://i.imgur.com/BtLImFu.jpg'); /* Replace with your own */
+      background-size: 300px 300px;
+      border: 1px solid #fff;
+      box-sizing: border-box;
+    }
+    #message {
+      display: none;
+      margin-top: 30px;
+      font-size: 1.5rem;
+      color: #880e4f;
+      text-align: center;
+      max-width: 80%;
+    }
+  </style>
+</head>
+<body>
+  <h1>Puzzle of My Heart</h1>
+  <div id="puzzle"></div>
+  <div id="message">💖 You complete me. I like you. 💖</div>
+
+  <script>
+    const puzzle = document.getElementById('puzzle');
+    const positions = [...Array(9).keys()];
+    const correctOrder = [...positions];
+
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+    }
+
+    shuffle(positions);
+
+    positions.forEach((pos, i) => {
+      const tile = document.createElement('div');
+      tile.classList.add('tile');
+      tile.draggable = true;
+      tile.style.backgroundPosition = `-${(pos % 3) * 100}px -${Math.floor(pos / 3) * 100}px`;
+      tile.dataset.index = pos;
+
+      tile.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('text/plain', i);
+      });
+
+      tile.addEventListener('dragover', (e) => e.preventDefault());
+
+      tile.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const fromIndex = e.dataTransfer.getData('text/plain');
+        const toIndex = i;
+
+        const fromTile = puzzle.children[fromIndex];
+        const toTile = puzzle.children[toIndex];
+
+        puzzle.insertBefore(fromTile, toTile);
+        puzzle.insertBefore(toTile, puzzle.children[fromIndex]);
+
+        checkWin();
+      });
+
+      puzzle.appendChild(tile);
+    });
+
+    function checkWin() {
+      const tiles = [...puzzle.children];
+      const isWin = tiles.every((tile, i) => +tile.dataset.index === correctOrder[i]);
+      if (isWin) {
+        document.getElementById('message').style.display = 'block';
+      }
+    }
+  </script>
+</body>
+</html>
