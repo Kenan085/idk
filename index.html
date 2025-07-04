@@ -1,106 +1,119 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
   <title>Puzzle of My Heart</title>
   <style>
     body {
       margin: 0;
-      background: #fce4ec;
-      font-family: 'Segoe UI', sans-serif;
+      font-family: sans-serif;
+      background-color: #fff0f5;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       height: 100vh;
-      overflow: hidden;
     }
+
     h1 {
+      color: #d81b60;
       margin-bottom: 20px;
-      color: #880e4f;
     }
-    #puzzle {
+
+    #puzzle-container {
       width: 300px;
       height: 300px;
-      display: flex;
-      flex-wrap: wrap;
-      border: 4px solid #880e4f;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 2px;
+      border: 3px solid #d81b60;
     }
+
     .tile {
       width: 100px;
       height: 100px;
-      background-image: url('https://i.postimg.cc/rFDDxDs0/Whats-App-Image-2025-07-05-at-2-37-18-AM.jpg'); /* Replace with your own */
+      background-image: url('https://i.postimg.cc/rFDDxDs0/Whats-App-Image-2025-07-05-at-2-37-18-AM.jpg'); /* Replace with your image */
       background-size: 300px 300px;
-      border: 1px solid #fff;
-      box-sizing: border-box;
+      cursor: grab;
     }
+
     #message {
-      display: none;
       margin-top: 30px;
-      font-size: 1.5rem;
-      color: #880e4f;
+      font-size: 1.5em;
+      color: #c2185b;
+      display: none;
       text-align: center;
-      max-width: 80%;
     }
   </style>
 </head>
 <body>
   <h1>Puzzle of My Heart</h1>
-  <div id="puzzle"></div>
+  <div id="puzzle-container"></div>
   <div id="message">💖 You complete me. I like you. 💖</div>
 
   <script>
-    const puzzle = document.getElementById('puzzle');
-    const positions = [...Array(9).keys()];
-    const correctOrder = [...positions];
+    const container = document.getElementById('puzzle-container');
+    const message = document.getElementById('message');
 
-    function shuffle(arr) {
-      for (let i = arr.length - 1; i > 0; i--) {
+    let order = [...Array(9).keys()];
+    let tiles = [];
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
+        [array[i], array[j]] = [array[j], array[i]];
       }
     }
 
-    shuffle(positions);
-
-    positions.forEach((pos, i) => {
-      const tile = document.createElement('div');
-      tile.classList.add('tile');
-      tile.draggable = true;
-      tile.style.backgroundPosition = `-${(pos % 3) * 100}px -${Math.floor(pos / 3) * 100}px`;
-      tile.dataset.index = pos;
-
-      tile.addEventListener('dragstart', (e) => {
-        e.dataTransfer.setData('text/plain', i);
+    function createTiles() {
+      shuffle(order);
+      order.forEach((index, i) => {
+        const tile = document.createElement('div');
+        tile.className = 'tile';
+        tile.draggable = true;
+        tile.dataset.correct = index;
+        tile.style.backgroundPosition = `-${(index % 3) * 100}px -${Math.floor(index / 3) * 100}px`;
+        container.appendChild(tile);
+        tiles.push(tile);
       });
+    }
 
-      tile.addEventListener('dragover', (e) => e.preventDefault());
+    let dragSrc;
 
-      tile.addEventListener('drop', (e) => {
-        e.preventDefault();
-        const fromIndex = e.dataTransfer.getData('text/plain');
-        const toIndex = i;
+    container.addEventListener('dragstart', (e) => {
+      dragSrc = e.target;
+    });
 
-        const fromTile = puzzle.children[fromIndex];
-        const toTile = puzzle.children[toIndex];
+    container.addEventListener('dragover', (e) => {
+      e.preventDefault();
+    });
 
-        puzzle.insertBefore(fromTile, toTile);
-        puzzle.insertBefore(toTile, puzzle.children[fromIndex]);
+    container.addEventListener('drop', (e) => {
+      e.preventDefault();
+      if (e.target.classList.contains('tile') && e.target !== dragSrc) {
+        const dragIndex = tiles.indexOf(dragSrc);
+        const dropIndex = tiles.indexOf(e.target);
+
+        // Swap elements in the DOM
+        container.insertBefore(dragSrc, tiles[dropIndex]);
+        container.insertBefore(e.target, tiles[dragIndex]);
+
+        // Swap in array
+        [tiles[dragIndex], tiles[dropIndex]] = [tiles[dropIndex], tiles[dragIndex]];
 
         checkWin();
-      });
-
-      puzzle.appendChild(tile);
+      }
     });
 
     function checkWin() {
-      const tiles = [...puzzle.children];
-      const isWin = tiles.every((tile, i) => +tile.dataset.index === correctOrder[i]);
-      if (isWin) {
-        document.getElementById('message').style.display = 'block';
+      const isComplete = tiles.every((tile, i) => +tile.dataset.correct === i);
+      if (isComplete) {
+        message.style.display = 'block';
       }
     }
+
+    createTiles();
   </script>
 </body>
 </html>
