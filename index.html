@@ -75,11 +75,11 @@
 
     function renderPuzzle() {
       puzzle.innerHTML = '';
-      order.forEach(i => {
+      order.forEach((originalPos, currentPos) => {
         const piece = document.createElement('div');
         piece.className = 'piece';
-        piece.dataset.index = i;
-        piece.style.backgroundPosition = `-${(i % 3) * 100}px -${Math.floor(i / 3) * 100}px`;
+        piece.dataset.index = originalPos;
+        piece.style.backgroundPosition = `-${(originalPos % 3) * 100}px -${Math.floor(originalPos / 3) * 100}px`;
         puzzle.appendChild(piece);
       });
     }
@@ -94,7 +94,28 @@
         return;
       }
 
-      // Swap
+      // Get the positions of the clicked pieces in the DOM
       const idx1 = Array.from(puzzle.children).indexOf(firstClick);
       const idx2 = Array.from(puzzle.children).indexOf(clicked);
-      [order[idx1], order[idx2]] = [order[idx2], orde]()
+      
+      // Swap in the order array
+      [order[idx1], order[idx2]] = [order[idx2], order[idx1]];
+
+      firstClick.style.outline = 'none';
+      firstClick = null;
+      renderPuzzle();
+      checkWin();
+    });
+
+    function checkWin() {
+      const isSolved = order.every((val, idx) => val === idx);
+      if (isSolved) {
+        message.style.display = 'block';
+      }
+    }
+
+    shuffle(order);
+    renderPuzzle();
+  </script>
+</body>
+</html>
